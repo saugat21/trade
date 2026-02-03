@@ -3,6 +3,12 @@
 import { useState } from "react";
 import DailyPnLBox from "./DailyPnLBOX";
 
+// ✅ LOCAL DATE KEY (NO UTC SHIFT)
+function toLocalDateKey(date) {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 function getDaysInMonth(year, monthIndex) {
   const days = [];
   const date = new Date(year, monthIndex, 1);
@@ -26,8 +32,9 @@ export default function PnLHeatmap({ trades, selectedMonth }) {
   const dailyStats = {};
   const tradesByDay = {};
 
+  // ✅ FIXED TRADE DATE GROUPING
   trades.forEach((t) => {
-    const key = new Date(t.date).toISOString().split("T")[0];
+    const key = toLocalDateKey(t.date);
 
     if (!dailyStats[key]) {
       dailyStats[key] = { pnl: 0, wins: 0, losses: 0, trades: 0 };
@@ -59,9 +66,10 @@ export default function PnLHeatmap({ trades, selectedMonth }) {
   return (
     <>
       {/* HEATMAP */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-7 gap-3">
         {daysInMonth.map((d) => {
-          const key = d.toISOString().split("T")[0];
+          const key = toLocalDateKey(d);
+
           return (
             <DailyPnLBox
               key={key}
@@ -81,7 +89,6 @@ export default function PnLHeatmap({ trades, selectedMonth }) {
       {selectedDayTrades && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-xl shadow-2xl">
-            {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-slate-100">
                 Lesson Review
@@ -94,7 +101,6 @@ export default function PnLHeatmap({ trades, selectedMonth }) {
               </button>
             </div>
 
-            {/* Lessons */}
             <div className="space-y-4 max-h-80 overflow-y-auto pr-1">
               {selectedDayTrades.map((t, i) => (
                 <div
@@ -107,8 +113,6 @@ export default function PnLHeatmap({ trades, selectedMonth }) {
                 </div>
               ))}
             </div>
-
-            
           </div>
         </div>
       )}
