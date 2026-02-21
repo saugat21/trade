@@ -111,7 +111,7 @@ export default function ProfitLossPage() {
         </div>
 
         {/* STATS */}
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-3 md:gap-7">
           <MonthlyAccuracy wins={wins} trades={totalTrades} />
 
           {/* TOTAL TRADES */}
