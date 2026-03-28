@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 export default function HistoryPage() {
+   const router = useRouter();
   const [trades, setTrades] = useState([]);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -10,6 +13,8 @@ export default function HistoryPage() {
   useEffect(() => {
     fetchTrades();
   }, []);
+
+  
 
   const fetchTrades = async () => {
     const res = await fetch("/api/trades");
@@ -36,6 +41,22 @@ const getDayName = (date) => {
   return new Date(date).toLocaleDateString("en-US", {
     weekday: "short", // Mon, Tue, Wed
   });
+};
+
+const handleEdit = (id) => {
+  router.push(`/trade/${id}`);
+};
+
+const handleDelete = async (id) => {
+  const confirmDelete = confirm("Are you sure you want to delete this trade?");
+
+  if (!confirmDelete) return;
+
+  await fetch(`/api/trades/${id}`, {
+    method: "DELETE",
+  });
+
+  fetchTrades(); 
 };
 
   return (
@@ -77,6 +98,7 @@ const getDayName = (date) => {
                 <th className="p-3">Session</th>
                 <th className="p-3">RR</th>
                 <th className="p-3">Result</th>
+                <th className="p-2">Action</th>
               </tr>
             </thead>
 
@@ -130,6 +152,23 @@ const getDayName = (date) => {
                       }`}
                     >
                       {trade.result}
+                    </td>
+                    <td className="p-3">
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <button
+                          onClick={() => handleEdit(trade._id)}
+                          className="text-blue-400 cursor-pointer text-left sm:text-center"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(trade._id)}
+                          className="text-red-400 cursor-pointer"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import React from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+
 
 function Input({ label, ...props }) {
   return (
@@ -50,8 +50,11 @@ function Textarea({ label, ...props }) {
   );
 }
 
-const page = () => {
+
+export default function EditTradePage() {
+  const { id } = useParams();
   const router = useRouter();
+
   const [form, setForm] = useState({
     date: "",
     asset: "",
@@ -63,6 +66,22 @@ const page = () => {
     result: "",
     lessonLearned: "",
   });
+
+
+  useEffect(() => {
+    if (id) fetchTrade();
+  }, [id]);
+
+  const fetchTrade = async () => {
+    const res = await fetch(`/api/trades/${id}`);
+    const data = await res.json();
+
+    setForm({
+      ...data,
+      date: data.date?.split("T")[0], 
+    });
+  };
+
   const rr =
     form.risk && form.reward ? `1:${(form.reward / form.risk).toFixed(1)}` : "";
 
@@ -70,34 +89,25 @@ const page = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // ✅ UPDATE instead of POST
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await fetch("/api/trades", {
-      method: "POST",
+    await fetch(`/api/trades/${id}`, {
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
 
-    setForm({
-      date: "",
-      asset: "",
-      position: "",
-      strategy: "",
-      session: "",
-      risk: "",
-      reward: "",
-      result: "",
-      lessonLearned: "",
-    });
-    router.push(`/profitandloss`);
+   
+    router.push("/profitandloss");
   };
 
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-10">
       <div className="max-w-4xl mx-auto bg-slate-900 rounded-2xl shadow-lg border border-slate-800 p-8">
         <h1 className="text-2xl font-semibold text-slate-100 mb-6 text-center">
-          Add New Trade
+          Edit Trade
         </h1>
 
         <form
@@ -120,7 +130,6 @@ const page = () => {
             options={["BTC", "GOLD", "SILVER", "FOREX", "OTHER"]}
           />
 
-          {/* Position */}
           <Select
             label="Position"
             name="position"
@@ -129,7 +138,6 @@ const page = () => {
             options={["BUY", "SELL"]}
           />
 
-          {/* Strategy */}
           <Select
             label="Strategy"
             name="strategy"
@@ -138,7 +146,6 @@ const page = () => {
             options={["EMA", "CRT", "SESSION_SWEEP", "OTHER"]}
           />
 
-          {/* Session */}
           <Select
             label="Session"
             name="session"
@@ -147,7 +154,6 @@ const page = () => {
             options={["ASIAN", "LONDON", "NEW_YORK"]}
           />
 
-          {/* Result */}
           <Select
             label="Result"
             name="result"
@@ -156,7 +162,6 @@ const page = () => {
             options={["WIN", "LOSS", "BREAKEVEN", "PARTIAL_CLOSE"]}
           />
 
-          {/* Risk */}
           <Input
             label="Risk ($)"
             type="number"
@@ -165,7 +170,6 @@ const page = () => {
             onChange={handleChange}
           />
 
-          {/* Reward */}
           <Input
             label="Reward ($)"
             type="number"
@@ -173,12 +177,12 @@ const page = () => {
             value={form.reward}
             onChange={handleChange}
           />
+
           <div className="md:col-span-2 text-sm text-slate-400">
             Risk : Reward →
-            <span className="text-slate-100 font-semibold">{rr}</span>
+            <span className="text-slate-100 font-semibold ml-2">{rr}</span>
           </div>
 
-          {/* Lesson */}
           <Textarea
             label="Lesson Learned"
             name="lessonLearned"
@@ -186,19 +190,16 @@ const page = () => {
             onChange={handleChange}
           />
 
-          {/* Submit */}
           <div className="md:col-span-2">
             <button
               type="submit"
               className="cursor-pointer w-full mt-4 bg-slate-100 text-slate-900 py-3 rounded-xl font-semibold hover:bg-white transition"
             >
-              Save Trade
+              Update Trade
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-};
-
-export default page;
+}
